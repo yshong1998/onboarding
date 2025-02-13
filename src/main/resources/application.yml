@@ -1,5 +1,16 @@
 spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+  profiles:
+    active: dev # 기본적으로 활성화할 profile을 local로 설정
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+# ...
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+# ...
