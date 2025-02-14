@@ -24,67 +24,67 @@ import java.util.Map;
 @Slf4j(topic = "로그인 및 JWT 생성")
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-  private final JwtUtil jwtUtil;
-  private final ObjectMapper objectMapper;
+    private final JwtUtil jwtUtil;
+    private final ObjectMapper objectMapper;
 
-  public JwtAuthenticationFilter(JwtUtil jwtUtil) {
-    this.jwtUtil = jwtUtil;
-    this.objectMapper = new ObjectMapper();
-    setFilterProcessesUrl("/sign");
-  }
-
-  @Override
-  public Authentication attemptAuthentication(HttpServletRequest request,
-      HttpServletResponse response) {
-    try {
-      LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(),
-          LoginRequestDto.class);
-      return getAuthenticationManager().authenticate(
-          new UsernamePasswordAuthenticationToken(
-              loginRequestDto.getUsername(),
-              loginRequestDto.getPassword(),
-              null
-          )
-      );
-
-    } catch (StreamReadException e) {
-      log.error(e.getMessage());
-      throw new RuntimeException(e.getMessage());
-    } catch (IOException e) {
-      log.error(e.getMessage());
-      throw new RuntimeException(e.getMessage());
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+        this.objectMapper = new ObjectMapper();
+        setFilterProcessesUrl("/sign");
     }
-  }
 
-  @Override
-  protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-      FilterChain chain, Authentication authResult) throws IOException {
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request,
+                                                HttpServletResponse response) {
+        try {
+            LoginRequestDto loginRequestDto = objectMapper.readValue(request.getInputStream(),
+                    LoginRequestDto.class);
+            return getAuthenticationManager().authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequestDto.getUsername(),
+                            loginRequestDto.getPassword(),
+                            null
+                    )
+            );
 
-    String username = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getUsername();
-    UserRole role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
+        } catch (StreamReadException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 
-    String accessToken = jwtUtil.createAccessToken(username, role);
-    String refreshToken = jwtUtil.createRefreshToken(username, role);
-    response.addHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
-    response.addCookie(new Cookie(JwtUtil.REFRESH_TOKEN_KEY, refreshToken));
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    new ObjectMapper().writeValue(
-            response.getWriter(), new LoginResponseDto(jwtUtil.substringToken(accessToken)));
-  }
+    @Override
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                            FilterChain chain, Authentication authResult) throws IOException {
 
-  @Override
-  protected void unsuccessfulAuthentication(HttpServletRequest request,
-      HttpServletResponse response, AuthenticationException failed)
-      throws IOException {
-    log.error("로그인 실패: " + failed.getMessage());
-    response.setStatus(401);
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
+        String username = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getUsername();
+        UserRole role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
-    Map<String, Object> errorResponse = new HashMap<>();
-    errorResponse.put("code", "UNAUTHORIZED");
-    errorResponse.put("message", "로그인에 실패했습니다.");
-    new ObjectMapper().writeValue(response.getWriter(), errorResponse);
-  }
+        String accessToken = jwtUtil.createAccessToken(username, role);
+        String refreshToken = jwtUtil.createRefreshToken(username, role);
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
+        response.addCookie(new Cookie(JwtUtil.REFRESH_TOKEN_KEY, refreshToken));
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        new ObjectMapper().writeValue(
+                response.getWriter(), new LoginResponseDto(jwtUtil.substringToken(accessToken)));
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+                                              HttpServletResponse response, AuthenticationException failed)
+            throws IOException {
+        log.error("로그인 실패: " + failed.getMessage());
+        response.setStatus(401);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("code", "UNAUTHORIZED");
+        errorResponse.put("message", "로그인에 실패했습니다.");
+        new ObjectMapper().writeValue(response.getWriter(), errorResponse);
+    }
 }

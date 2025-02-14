@@ -24,13 +24,11 @@ public class JwtUtil {
     public static final String AUTHORIZATION_KEY = "auth";
     public static final String BEARER_PREFIX = "Bearer ";
 
-    @Value("${jwt.secret.key}")
-    private String secretKey;
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
     @PostConstruct
-    public void init() {
+    public void init(@Value("${jwt.secret.key}") String secretKey) {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
     }
@@ -53,25 +51,25 @@ public class JwtUtil {
         Date date = new Date();
 
         return Jwts.builder()
-                        .setSubject(username)
-                        .claim(AUTHORIZATION_KEY, role)
-                        .setExpiration(new Date(date.getTime() + JwtType.REFRESH_TOKEN.getExpirationTime()))
-                        .setIssuedAt(date)
-                        .signWith(key, signatureAlgorithm)
-                        .compact();
+                .setSubject(username)
+                .claim(AUTHORIZATION_KEY, role)
+                .setExpiration(new Date(date.getTime() + JwtType.REFRESH_TOKEN.getExpirationTime()))
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
+                .compact();
     }
 
     // JWT 토큰 substring
     public String substringToken(String tokenValue) {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
-            return tokenValue.substring(7);
+            return tokenValue.substring(BEARER_PREFIX.length());
         }
         log.error("Not Found Token");
         throw new NullPointerException("Not Found Token");
     }
 
     // 토큰 검증
-    public boolean validateToken(String token)  {
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;

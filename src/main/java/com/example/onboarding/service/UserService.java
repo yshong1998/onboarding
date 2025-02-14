@@ -40,10 +40,12 @@ public class UserService {
         if (!jwtUtil.validateToken(refreshToken)) {
             throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
         }
+
         Claims tokenClaims = jwtUtil.getClaimsFromToken(refreshToken);
         String username = tokenClaims.getSubject();
         String roleString = tokenClaims.get(JwtUtil.AUTHORIZATION_KEY, String.class);
         UserRole userRole = UserRole.valueOf(roleString);
+
         String newAccessToken = jwtUtil.createAccessToken(username, userRole);
         String newRefreshToken = jwtUtil.createRefreshToken(username, userRole);
 
