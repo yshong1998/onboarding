@@ -28,7 +28,9 @@ public class WebSecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final String[] permitRequests = {"/signup","/reissue"};
+    private final String[] permitRequests = {
+            "/signup","/reissue",
+            "/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {
