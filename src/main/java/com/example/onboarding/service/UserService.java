@@ -11,10 +11,12 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -40,7 +42,7 @@ public class UserService {
         if (!jwtUtil.validateToken(refreshToken)) {
             throw new RuntimeException("Refresh Token 이 유효하지 않습니다.");
         }
-
+        log.info("Refresh Token이 유효합니다. 토큰 재발급을 진행합니다.");
         Claims tokenClaims = jwtUtil.getClaimsFromToken(refreshToken);
         String username = tokenClaims.getSubject();
         String roleString = tokenClaims.get(JwtUtil.AUTHORIZATION_KEY, String.class);
@@ -51,5 +53,6 @@ public class UserService {
 
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, newAccessToken);
         response.addCookie(new Cookie(JwtUtil.REFRESH_TOKEN_KEY, newRefreshToken));
+        log.info("새로운 토큰이 발급되었습니다.");
     }
 }

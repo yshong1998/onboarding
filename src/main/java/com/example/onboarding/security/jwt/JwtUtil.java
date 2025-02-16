@@ -4,7 +4,6 @@ package com.example.onboarding.security.jwt;
 import com.example.onboarding.domain.UserRole;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,13 +23,13 @@ public class JwtUtil {
     public static final String AUTHORIZATION_KEY = "auth";
     public static final String BEARER_PREFIX = "Bearer ";
 
-    private Key key;
-    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+    private final Key key;
+    private final SignatureAlgorithm signatureAlgorithm;
 
-    @PostConstruct
-    public void init(@Value("${jwt.secret.key}") String secretKey) {
+    public JwtUtil(@Value("${jwt.secret.key}") String secretKey) {
         byte[] bytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(bytes);
+        signatureAlgorithm = SignatureAlgorithm.HS256;
     }
 
     // 토큰 생성

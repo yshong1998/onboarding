@@ -19,8 +19,7 @@ class JwtUtilTest {
 
     @BeforeEach
     void setUp() {
-        jwtUtil = new JwtUtil();
-        jwtUtil.init(secretKey);
+        jwtUtil = new JwtUtil(secretKey);
     }
 
     @Test

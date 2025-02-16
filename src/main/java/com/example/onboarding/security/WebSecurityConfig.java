@@ -28,7 +28,7 @@ public class WebSecurityConfig {
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final String[] permitRequests = {"/reissue"};
+    private final String[] permitRequests = {"/signup","/reissue"};
 
     @Bean
     public PasswordEncoder passwordEncoder() {
